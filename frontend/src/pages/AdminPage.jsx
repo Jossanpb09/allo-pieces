@@ -602,6 +602,7 @@ const AdminDashboard = ({ onLogout }) => {
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [activeTab, setActiveTab] = useState("products");
 
   useEffect(() => {
     fetchProducts();
@@ -668,80 +669,98 @@ const AdminDashboard = ({ onLogout }) => {
 
       {/* Main content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <h1 className="font-heading text-2xl font-bold text-gray-900 uppercase">Gestion des produits</h1>
-          <Button className="bg-red-600 hover:bg-red-700" onClick={() => { setSelectedProduct(null); setFormDialogOpen(true); }} data-testid="add-product-btn">
-            <Plus className="h-4 w-4 mr-2" /> Ajouter un produit
-          </Button>
-        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+            <TabsTrigger value="products" className="flex items-center gap-2" data-testid="tab-products">
+              <Car className="h-4 w-4" /> Produits
+            </TabsTrigger>
+            <TabsTrigger value="quotes" className="flex items-center gap-2" data-testid="tab-quotes">
+              <FileText className="h-4 w-4" /> Devis
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Search */}
-        <div className="relative max-w-md mb-6">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="Rechercher par référence, nom..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-            data-testid="admin-search-input"
-          />
-        </div>
+          <TabsContent value="products">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+              <h1 className="font-heading text-2xl font-bold text-gray-900 uppercase">Gestion des produits</h1>
+              <Button className="bg-red-600 hover:bg-red-700" onClick={() => { setSelectedProduct(null); setFormDialogOpen(true); }} data-testid="add-product-btn">
+                <Plus className="h-4 w-4 mr-2" /> Ajouter un produit
+              </Button>
+            </div>
 
-        {/* Products table */}
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-gray-50">
-                  <TableHead className="font-bold">Référence</TableHead>
-                  <TableHead className="font-bold">Nom</TableHead>
-                  <TableHead className="font-bold">Prix</TableHead>
-                  <TableHead className="font-bold">Stock</TableHead>
-                  <TableHead className="font-bold">Catégorie</TableHead>
-                  <TableHead className="font-bold text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
-                    </TableCell>
-                  </TableRow>
-                ) : products.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                      Aucun produit trouvé
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  products.map((product) => (
-                    <TableRow key={product.id} data-testid={`product-row-${product.id}`}>
-                      <TableCell className="font-mono font-bold text-sm">{product.reference}</TableCell>
-                      <TableCell className="max-w-xs truncate">{product.name}</TableCell>
-                      <TableCell className="font-bold text-red-600">{product.price.toFixed(2)} €</TableCell>
-                      <TableCell><StockBadge stock={product.stock} /></TableCell>
-                      <TableCell className="text-gray-500">{CATEGORIES.find(c => c.id === product.category)?.name || "-"}</TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={() => openEditDialog(product)} data-testid={`edit-product-${product.id}`}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700" onClick={() => openDeleteDialog(product)} data-testid={`delete-product-${product.id}`}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
+            {/* Search */}
+            <div className="relative max-w-md mb-6">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Rechercher par référence, nom..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+                data-testid="admin-search-input"
+              />
+            </div>
+
+            {/* Products table */}
+            <Card>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50">
+                      <TableHead className="font-bold">Référence</TableHead>
+                      <TableHead className="font-bold">Nom</TableHead>
+                      <TableHead className="font-bold">Prix</TableHead>
+                      <TableHead className="font-bold">Stock</TableHead>
+                      <TableHead className="font-bold">Catégorie</TableHead>
+                      <TableHead className="font-bold text-right">Actions</TableHead>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+                        </TableCell>
+                      </TableRow>
+                    ) : products.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                          Aucun produit trouvé
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      products.map((product) => (
+                        <TableRow key={product.id} data-testid={`product-row-${product.id}`}>
+                          <TableCell className="font-mono font-bold text-sm">{product.reference}</TableCell>
+                          <TableCell className="max-w-xs truncate">{product.name}</TableCell>
+                          <TableCell className="font-bold text-red-600">{product.price.toFixed(2)} €</TableCell>
+                          <TableCell><StockBadge stock={product.stock} /></TableCell>
+                          <TableCell className="text-gray-500">{CATEGORIES.find(c => c.id === product.category)?.name || "-"}</TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="sm" onClick={() => openEditDialog(product)} data-testid={`edit-product-${product.id}`}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700" onClick={() => openDeleteDialog(product)} data-testid={`delete-product-${product.id}`}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
 
-        <p className="text-sm text-gray-500 mt-4">
-          Total: {products.length} produit{products.length > 1 ? "s" : ""}
-        </p>
+            <p className="text-sm text-gray-500 mt-4">
+              Total: {products.length} produit{products.length > 1 ? "s" : ""}
+            </p>
+          </TabsContent>
+
+          <TabsContent value="quotes">
+            <h1 className="font-heading text-2xl font-bold text-gray-900 uppercase mb-6">Demandes de devis</h1>
+            <QuotesManagement />
+          </TabsContent>
+        </Tabs>
       </main>
 
       <ProductFormDialog
