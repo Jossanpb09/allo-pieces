@@ -496,7 +496,7 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-zinc-950">
-      <Header onPaymentClick={() => setPaymentModalOpen(true)} />
+      <Header onPaymentClick={() => setPaymentModalOpen(true)} onQuoteClick={() => setQuoteModalOpen(true)} />
       
       {/* Hero Section */}
       <section className="hero-bg pt-32 pb-20 px-4" data-testid="hero-section">
