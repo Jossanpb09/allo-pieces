@@ -415,6 +415,10 @@ const Footer = () => (
               <Phone className="h-4 w-4 text-red-400" />
               <span>Part: 02 32 51 04 33</span>
             </li>
+            <li className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-blue-400" />
+              <span>allopiece27@gmail.com</span>
+            </li>
           </ul>
         </div>
         <div>
