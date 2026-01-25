@@ -111,6 +111,30 @@ class CreateCheckoutRequest(BaseModel):
 class ProCodeValidation(BaseModel):
     code: str
 
+class QuoteRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    email: str
+    phone: str
+    plate_or_vin: str
+    part_description: str
+    status: str = "pending"  # pending, processed, quoted, rejected
+    admin_notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class QuoteRequestCreate(BaseModel):
+    name: str
+    email: str
+    phone: str
+    plate_or_vin: str
+    part_description: str
+
+class QuoteStatusUpdate(BaseModel):
+    status: str
+    admin_notes: Optional[str] = None
+
 # ==================== AUTH HELPERS ====================
 
 def hash_password(password: str) -> str:
