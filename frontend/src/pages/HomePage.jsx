@@ -97,7 +97,7 @@ Merci de confirmer le prix, la compatibilité et le délai.`);
 };
 
 // Header component
-const Header = ({ onPaymentClick }) => {
+const Header = ({ onPaymentClick, onQuoteClick }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -108,6 +108,9 @@ const Header = ({ onPaymentClick }) => {
           
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-3">
+            <Button onClick={onQuoteClick} className="bg-amber-500 hover:bg-amber-600 text-black font-bold" data-testid="header-quote-btn">
+              <FileText className="h-4 w-4 mr-2" /> Devis gratuit
+            </Button>
             <Button asChild variant="ghost" className="text-white hover:bg-white/10" data-testid="header-whatsapp-btn">
               <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
                 <MessageCircle className="h-4 w-4 mr-2 text-green-400" /> Professionnels
@@ -137,6 +140,9 @@ const Header = ({ onPaymentClick }) => {
         {/* Mobile menu */}
         {menuOpen && (
           <nav className="md:hidden pb-4 space-y-2">
+            <Button onClick={() => { onQuoteClick(); setMenuOpen(false); }} className="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold">
+              <FileText className="h-4 w-4 mr-2" /> Demander un devis gratuit
+            </Button>
             <Button asChild variant="ghost" className="w-full justify-start text-white hover:bg-white/10">
               <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
                 <MessageCircle className="h-4 w-4 mr-2 text-green-400" /> Professionnels (WhatsApp)
@@ -152,7 +158,7 @@ const Header = ({ onPaymentClick }) => {
                 <ExternalLink className="h-4 w-4 mr-2 text-orange-400" /> Boutique Leboncoin
               </a>
             </Button>
-            <Button onClick={onPaymentClick} className="w-full bg-red-600 hover:bg-red-700 text-white">
+            <Button onClick={() => { onPaymentClick(); setMenuOpen(false); }} className="w-full bg-red-600 hover:bg-red-700 text-white">
               <CreditCard className="h-4 w-4 mr-2" /> Payer en ligne
             </Button>
           </nav>
