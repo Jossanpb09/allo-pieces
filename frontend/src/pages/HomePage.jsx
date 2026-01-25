@@ -259,6 +259,140 @@ const PaymentModal = ({ open, onClose }) => {
   );
 };
 
+// Quote/Devis modal
+const QuoteModal = ({ open, onClose }) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    plate_or_vin: "",
+    part_description: ""
+  });
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!formData.name || !formData.email || !formData.phone || !formData.plate_or_vin || !formData.part_description) {
+      toast.error("Veuillez remplir tous les champs");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await axios.post(`${API}/quotes`, formData);
+      setSuccess(true);
+      toast.success("Demande de devis envoyée !");
+      setTimeout(() => {
+        onClose();
+        setSuccess(false);
+        setFormData({ name: "", email: "", phone: "", plate_or_vin: "", part_description: "" });
+      }, 2000);
+    } catch (error) {
+      console.error("Quote error:", error);
+      toast.error("Erreur lors de l'envoi de la demande");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="bg-white sm:max-w-lg" data-testid="quote-modal">
+        <DialogHeader>
+          <DialogTitle className="font-heading text-xl flex items-center gap-2">
+            <FileText className="h-6 w-6 text-red-600" />
+            Demande de devis gratuit
+          </DialogTitle>
+          <DialogDescription>
+            Remplissez ce formulaire, nous vous répondrons rapidement avec un devis personnalisé.
+          </DialogDescription>
+        </DialogHeader>
+        
+        {success ? (
+          <div className="py-8 text-center">
+            <div className="bg-green-100 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+              <Check className="h-8 w-8 text-green-600" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Demande envoyée !</h3>
+            <p className="text-gray-500">Nous vous contacterons très rapidement.</p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Nom *</label>
+                <Input
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Votre nom"
+                  required
+                  data-testid="quote-name-input"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Téléphone *</label>
+                <Input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="06 12 34 56 78"
+                  required
+                  data-testid="quote-phone-input"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Email *</label>
+              <Input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="votre@email.com"
+                required
+                data-testid="quote-email-input"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Plaque d'immatriculation ou VIN *</label>
+              <Input
+                value={formData.plate_or_vin}
+                onChange={(e) => setFormData({ ...formData, plate_or_vin: e.target.value })}
+                placeholder="AB-123-CD ou numéro VIN"
+                required
+                data-testid="quote-plate-input"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Pièce recherchée *</label>
+              <textarea
+                value={formData.part_description}
+                onChange={(e) => setFormData({ ...formData, part_description: e.target.value })}
+                placeholder="Décrivez la pièce que vous recherchez (ex: pare-choc avant, phare gauche, rétroviseur droit...)"
+                className="w-full min-h-[100px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                required
+                data-testid="quote-part-input"
+              />
+            </div>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-red-600 hover:bg-red-700 text-white py-6 text-lg font-bold"
+              data-testid="quote-submit-btn"
+            >
+              {loading ? "Envoi en cours..." : "Envoyer ma demande"}
+            </Button>
+            <p className="text-xs text-gray-500 text-center">
+              📧 Réponse rapide par email à allopiece27@gmail.com
+            </p>
+          </form>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 // Footer component
 const Footer = () => (
   <footer className="bg-zinc-950 text-white py-12 border-t border-white/10" data-testid="footer">
