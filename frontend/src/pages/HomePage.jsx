@@ -702,6 +702,7 @@ const HomePage = () => {
       <Footer />
       <MobileBottomBar />
       <PaymentModal open={paymentModalOpen} onClose={() => setPaymentModalOpen(false)} />
+      <QuoteModal open={quoteModalOpen} onClose={() => setQuoteModalOpen(false)} />
     </div>
   );
 };
