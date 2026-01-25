@@ -520,6 +520,9 @@ const HomePage = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-wrap justify-center gap-3 animate-fade-in-up animate-delay-300">
+            <Button onClick={() => setQuoteModalOpen(true)} className="bg-amber-500 hover:bg-amber-600 text-black font-bold px-6" data-testid="hero-quote-btn">
+              <FileText className="h-5 w-5 mr-2" /> Demander un devis
+            </Button>
             <Button asChild className="btn-whatsapp text-white font-bold px-6" data-testid="hero-whatsapp-btn">
               <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
                 <MessageCircle className="h-5 w-5 mr-2" /> WhatsApp Pro
