@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { Car, LogOut, Plus, Pencil, Trash2, Search, ArrowLeft } from "lucide-react";
+import { Car, LogOut, Plus, Pencil, Trash2, Search, ArrowLeft, FileText, Eye, Clock, CheckCircle, XCircle, Mail, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
