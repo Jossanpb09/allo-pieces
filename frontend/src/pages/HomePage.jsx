@@ -683,7 +683,7 @@ const HomePage = () => {
           <h2 className="font-heading text-3xl font-bold text-gray-900 uppercase tracking-tight text-center mb-10">
             Contact & Horaires
           </h2>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             <Card className="bg-white">
               <CardContent className="p-6">
                 <h3 className="font-heading font-bold text-xl mb-4 flex items-center gap-2">
@@ -692,20 +692,20 @@ const HomePage = () => {
                 <ul className="space-y-4">
                   <li>
                     <span className="text-sm text-gray-500 block mb-1">Professionnels (WhatsApp)</span>
-                    <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="text-green-600 font-bold flex items-center gap-2">
+                    <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="text-green-600 font-bold flex items-center gap-2 hover:underline">
                       <MessageCircle className="h-5 w-5" /> +33 6 86 72 13 72
                     </a>
                   </li>
                   <li>
                     <span className="text-sm text-gray-500 block mb-1">Particuliers (Téléphone)</span>
-                    <a href={`tel:${CONTACTS.phone}`} className="text-red-600 font-bold flex items-center gap-2">
+                    <a href={`tel:${CONTACTS.phone}`} className="text-red-600 font-bold flex items-center gap-2 hover:underline">
                       <Phone className="h-5 w-5" /> 02 32 51 04 33
                     </a>
                   </li>
                   <li>
-                    <span className="text-sm text-gray-500 block mb-1">Boutique en ligne</span>
-                    <a href={CONTACTS.leboncoin} target="_blank" rel="noopener noreferrer" className="text-orange-600 font-bold flex items-center gap-2">
-                      <ExternalLink className="h-5 w-5" /> Leboncoin
+                    <span className="text-sm text-gray-500 block mb-1">Email</span>
+                    <a href="mailto:allopiece27@gmail.com" className="text-blue-600 font-bold flex items-center gap-2 hover:underline">
+                      <Mail className="h-5 w-5" /> allopiece27@gmail.com
                     </a>
                   </li>
                 </ul>
@@ -726,6 +726,27 @@ const HomePage = () => {
                     <span className="font-bold text-red-600">Fermé</span>
                   </li>
                 </ul>
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <a href={CONTACTS.leboncoin} target="_blank" rel="noopener noreferrer" className="text-orange-600 font-bold flex items-center gap-2 hover:underline">
+                    <ExternalLink className="h-5 w-5" /> Boutique Leboncoin
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-red-600 text-white">
+              <CardContent className="p-6">
+                <h3 className="font-heading font-bold text-xl mb-4 flex items-center gap-2">
+                  <FileText className="h-5 w-5" /> Devis rapide
+                </h3>
+                <p className="text-white/90 text-sm mb-4">
+                  Envoyez-nous votre plaque et la pièce recherchée pour un devis personnalisé.
+                </p>
+                <Button onClick={() => setQuoteModalOpen(true)} className="w-full bg-white text-red-600 hover:bg-gray-100 font-bold" data-testid="contact-quote-btn">
+                  <FileText className="h-4 w-4 mr-2" /> Demander un devis
+                </Button>
+                <p className="text-white/70 text-xs mt-3 text-center">
+                  Réponse rapide garantie
+                </p>
               </CardContent>
             </Card>
           </div>
