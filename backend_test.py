@@ -389,6 +389,18 @@ class AlloPieces76APITester:
         if success and session_id:
             self.test_payment_status(session_id)
         
+        # Quote system tests
+        quote_id = None
+        success, quote_id = self.test_create_quote()
+        self.test_get_quotes_unauthorized()
+        if self.token:
+            self.test_get_quotes_authorized()
+            self.test_get_quote_stats()
+            if quote_id:
+                self.test_get_single_quote(quote_id)
+                self.test_update_quote_status(quote_id)
+                self.test_delete_quote(quote_id)
+        
         # Error handling tests
         self.test_invalid_endpoints()
         
