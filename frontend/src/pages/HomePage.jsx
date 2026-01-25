@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Search, Phone, MessageCircle, ExternalLink, MapPin, Clock, Truck, Car, Lightbulb, Eye, Thermometer, Wrench, Settings, CreditCard, ShieldCheck, Menu, X, FileText, Check } from "lucide-react";
+import { Search, Phone, MessageCircle, ExternalLink, MapPin, Clock, Truck, Car, Lightbulb, Eye, Thermometer, Wrench, Settings, CreditCard, ShieldCheck, Menu, X, FileText, Check, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
