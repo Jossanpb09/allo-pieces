@@ -247,10 +247,103 @@ class AlloPieces76APITester:
             200
         )
 
+    def test_create_quote(self):
+        """Test creating a new quote request"""
+        quote_data = {
+            "name": "Test Client",
+            "email": "test@example.com",
+            "phone": "0123456789",
+            "plate_or_vin": "AB-123-CD",
+            "part_description": "Pare-choc avant pour test"
+        }
+        
+        success, response = self.run_test(
+            "Create Quote Request",
+            "POST",
+            "quotes",
+            200,
+            data=quote_data
+        )
+        
+        if success and 'quote_id' in response:
+            return True, response['quote_id']
+        return False, None
+
+    def test_get_quotes_unauthorized(self):
+        """Test getting quotes without authentication"""
+        old_token = self.token
+        self.token = None
+        result = self.run_test("Get Quotes (Unauthorized)", "GET", "quotes", 401)
+        self.token = old_token
+        return result
+
+    def test_get_quotes_authorized(self):
+        """Test getting quotes with authentication"""
+        if not self.token:
+            self.log_result("Get Quotes (No Token)", False, "No token available")
+            return False
+        return self.run_test("Get Quotes (Authorized)", "GET", "quotes", 200)
+
+    def test_get_quote_stats(self):
+        """Test getting quote statistics"""
+        if not self.token:
+            self.log_result("Get Quote Stats (No Token)", False, "No token available")
+            return False
+        return self.run_test("Get Quote Statistics", "GET", "quotes/stats/summary", 200)
+
+    def test_get_single_quote(self, quote_id):
+        """Test getting a single quote"""
+        if not self.token or not quote_id:
+            self.log_result("Get Single Quote", False, "No token or quote ID")
+            return False
+            
+        return self.run_test(
+            "Get Single Quote",
+            "GET",
+            f"quotes/{quote_id}",
+            200
+        )
+
+    def test_update_quote_status(self, quote_id):
+        """Test updating quote status"""
+        if not self.token or not quote_id:
+            self.log_result("Update Quote Status", False, "No token or quote ID")
+            return False
+            
+        update_data = {
+            "status": "processed",
+            "admin_notes": "Test note from API testing"
+        }
+        
+        return self.run_test(
+            "Update Quote Status",
+            "PUT",
+            f"quotes/{quote_id}",
+            200,
+            data=update_data
+        )
+
+    def test_delete_quote(self, quote_id):
+        """Test deleting a quote"""
+        if not self.token or not quote_id:
+            self.log_result("Delete Quote", False, "No token or quote ID")
+            return False
+            
+        return self.run_test(
+            "Delete Quote",
+            "DELETE",
+            f"quotes/{quote_id}",
+            200
+        )
+
     def test_invalid_endpoints(self):
         """Test some invalid endpoints to ensure proper error handling"""
         # Test non-existent product
         self.run_test("Get Non-existent Product", "GET", "products/nonexistent", 404)
+        
+        # Test non-existent quote
+        if self.token:
+            self.run_test("Get Non-existent Quote", "GET", "quotes/nonexistent", 404)
         
         # Test unauthorized product creation
         old_token = self.token
