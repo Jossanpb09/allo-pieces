@@ -370,6 +370,95 @@ async def validate_pro_code(data: ProCodeValidation):
         return {"valid": True, "message": "Accès autorisé"}
     return {"valid": False, "message": "Code incorrect"}
 
+# ==================== QUOTE/DEVIS ROUTES ====================
+
+ADMIN_EMAIL = "allopiece27@gmail.com"
+
+@api_router.post("/quotes")
+async def create_quote(quote: QuoteRequestCreate):
+    """Create a new quote request"""
+    new_quote = QuoteRequest(**quote.model_dump())
+    doc = new_quote.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['updated_at'] = doc['updated_at'].isoformat()
+    await db.quotes.insert_one(doc)
+    
+    logger.info(f"New quote request from {quote.name} ({quote.email}) - Plate/VIN: {quote.plate_or_vin}")
+    
+    return {
+        "success": True,
+        "message": "Votre demande de devis a été envoyée avec succès. Nous vous répondrons rapidement.",
+        "quote_id": new_quote.id
+    }
+
+@api_router.get("/quotes", response_model=List[QuoteRequest])
+async def get_quotes(status: Optional[str] = None, admin: dict = Depends(get_current_admin)):
+    """Get all quote requests (admin only)"""
+    query = {}
+    if status:
+        query["status"] = status
+    
+    quotes = await db.quotes.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    for q in quotes:
+        if isinstance(q.get('created_at'), str):
+            q['created_at'] = datetime.fromisoformat(q['created_at'])
+        if isinstance(q.get('updated_at'), str):
+            q['updated_at'] = datetime.fromisoformat(q['updated_at'])
+    return quotes
+
+@api_router.get("/quotes/{quote_id}", response_model=QuoteRequest)
+async def get_quote(quote_id: str, admin: dict = Depends(get_current_admin)):
+    """Get a specific quote request (admin only)"""
+    quote = await db.quotes.find_one({"id": quote_id}, {"_id": 0})
+    if not quote:
+        raise HTTPException(status_code=404, detail="Devis non trouvé")
+    if isinstance(quote.get('created_at'), str):
+        quote['created_at'] = datetime.fromisoformat(quote['created_at'])
+    if isinstance(quote.get('updated_at'), str):
+        quote['updated_at'] = datetime.fromisoformat(quote['updated_at'])
+    return quote
+
+@api_router.put("/quotes/{quote_id}")
+async def update_quote_status(quote_id: str, update: QuoteStatusUpdate, admin: dict = Depends(get_current_admin)):
+    """Update quote status (admin only)"""
+    existing = await db.quotes.find_one({"id": quote_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Devis non trouvé")
+    
+    update_data = {
+        "status": update.status,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    if update.admin_notes is not None:
+        update_data["admin_notes"] = update.admin_notes
+    
+    await db.quotes.update_one({"id": quote_id}, {"$set": update_data})
+    
+    return {"success": True, "message": "Devis mis à jour"}
+
+@api_router.delete("/quotes/{quote_id}")
+async def delete_quote(quote_id: str, admin: dict = Depends(get_current_admin)):
+    """Delete a quote request (admin only)"""
+    result = await db.quotes.delete_one({"id": quote_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Devis non trouvé")
+    return {"message": "Devis supprimé"}
+
+@api_router.get("/quotes/stats/summary")
+async def get_quotes_stats(admin: dict = Depends(get_current_admin)):
+    """Get quote statistics (admin only)"""
+    total = await db.quotes.count_documents({})
+    pending = await db.quotes.count_documents({"status": "pending"})
+    processed = await db.quotes.count_documents({"status": "processed"})
+    quoted = await db.quotes.count_documents({"status": "quoted"})
+    
+    return {
+        "total": total,
+        "pending": pending,
+        "processed": processed,
+        "quoted": quoted
+    }
+
 # ==================== CATEGORIES ROUTE ====================
 
 @api_router.get("/categories")
