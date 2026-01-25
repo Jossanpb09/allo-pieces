@@ -1,0 +1,133 @@
+{
+  "design_system": {
+    "identity": {
+      "name": "ALLO PIECES 76",
+      "archetype": "The Performance Pro",
+      "vibe": "Mechanical, Fast, Reliable, French Automotive",
+      "principles": [
+        "Speed is feature #1",
+        "High Contrast for readability in garages",
+        "Mobile-first navigation",
+        "Direct communication (WhatsApp/Phone) is priority"
+      ]
+    },
+    "typography": {
+      "headings": {
+        "family": "Barlow Condensed, sans-serif",
+        "weights": ["700", "800"],
+        "usage": "Uppercase, tracking-tight, heavy impact",
+        "import_url": "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Manrope:wght@400;500;700&display=swap"
+      },
+      "body": {
+        "family": "Manrope, sans-serif",
+        "weights": ["400", "500", "700"],
+        "usage": "Clean, technical, high legibility"
+      }
+    },
+    "colors": {
+      "palette": {
+        "primary": "#DC2626",
+        "primary_hover": "#B91C1C",
+        "secondary": "#1F1F1F",
+        "background_dark": "#09090B",
+        "background_light": "#F3F4F6",
+        "surface_dark": "#18181B",
+        "surface_light": "#FFFFFF",
+        "text_main_dark": "#FFFFFF",
+        "text_muted_dark": "#A1A1AA",
+        "text_main_light": "#111827",
+        "text_muted_light": "#4B5563",
+        "whatsapp": "#25D366",
+        "leboncoin": "#F56B2A"
+      },
+      "usage_rules": {
+        "hero_section": "Dark theme (Obsidian #09090B)",
+        "catalog_section": "Light theme (Gray #F3F4F6) for product clarity",
+        "footer": "Dark theme",
+        "cta_primary": "Red #DC2626",
+        "cta_whatsapp": "Green #25D366"
+      }
+    },
+    "spacing": {
+      "container_padding": "p-4 md:p-8 lg:p-12",
+      "section_gap": "gap-12 md:gap-24",
+      "grid_gap": "gap-4 md:gap-6"
+    },
+    "visual_enhancers": {
+      "borders": "1px solid rgba(255,255,255,0.1) on dark, 1px solid #E5E7EB on light",
+      "shadows": "shadow-lg for cards, shadow-xl for sticky elements",
+      "radius": "rounded-none for 'tough' look, or rounded-md for modern feel. Decision: rounded-md",
+      "textures": "Subtle carbon fiber pattern or noise overlay on dark sections"
+    }
+  },
+  "layout_strategy": {
+    "structure": "One-Page Scroll + Modal/Separate Pages for Admin/Pro",
+    "header": {
+      "style": "Sticky, Glassmorphism (Dark)",
+      "elements": ["Logo (Left)", "Nav Links (Hidden mobile)", "Cart Icon (Right)", "Pro Link"]
+    },
+    "hero": {
+      "type": "Immersive Background Image with Overlay",
+      "content": ["Headline: TROUVEZ VOTRE PIÈCE AUTO", "Subhead: 100% Français, Stock Réel, Prix Pro", "Search Bar: License Plate style or Part Name"]
+    },
+    "mobile_sticky_bar": {
+      "visible": "Mobile Only (< md)",
+      "layout": "Fixed Bottom, 50% split",
+      "left_btn": {"label": "APPELER", "color": "bg-red-600", "icon": "Phone"},
+      "right_btn": {"label": "WHATSAPP", "color": "bg-green-500", "icon": "MessageCircle"}
+    },
+    "catalog_grid": {
+      "desktop": "grid-cols-4",
+      "tablet": "grid-cols-3",
+      "mobile": "grid-cols-1",
+      "card_style": "White background, image top, price prominent red"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-red-600 hover:bg-red-700 text-white font-bold uppercase tracking-wide py-3 px-6 rounded-md transition-all",
+      "secondary": "bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700",
+      "outline": "border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
+    },
+    "cards": {
+      "product": "bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-100 overflow-hidden group",
+      "category": "relative overflow-hidden rounded-lg aspect-square group cursor-pointer"
+    },
+    "inputs": {
+      "search": "h-14 text-lg bg-white text-black border-2 border-red-600/20 focus:border-red-600 rounded-md pl-12"
+    }
+  },
+  "assets": {
+    "images": {
+      "hero_bg": "https://images.unsplash.com/photo-1702146713882-2579afb0bfba?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "contact_bg": "https://images.unsplash.com/photo-1636761358756-ef34b4ef036a?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "categories": {
+        "brakes": "https://images.unsplash.com/photo-1594500067672-3819eff9af4d?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "engine": "https://images.unsplash.com/photo-1656597631672-9a3bc4d3c72f?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "electrical": "https://images.unsplash.com/photo-1561338800-3aca39ac913e?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "service": "https://images.unsplash.com/photo-1644183230182-85bcf9b0ec5f?crop=entropy&cs=srgb&fm=jpg&q=85"
+      }
+    },
+    "icons": "Lucide React (Wrench, Car, Phone, MessageCircle, ShoppingCart, Search, MapPin, Clock)"
+  },
+  "instructions_to_main_agent": [
+    "1. SETUP: Install 'lucide-react' and 'framer-motion' immediately.",
+    "2. FONTS: Add the Google Fonts import to index.css.",
+    "3. THEME: Implement the 'dark' class on the html element by default, but override specific sections (Catalog) with 'bg-gray-100 text-gray-900'.",
+    "4. MOBILE: The sticky bottom bar is CRITICAL. Ensure z-index is high (50).",
+    "5. SEARCH: The search bar in the Hero should look like a 'License Plate' or have a strong automotive visual cue.",
+    "6. ADMIN: Keep the Admin UI simple (Shadcn Table + Dialogs). No need for heavy styling there, focus on function.",
+    "7. PRO PAGE: Needs a 'Gatekeeper' screen (Enter Code) before showing content.",
+    "8. IMAGES: Use the provided Unsplash URLs. Do not use placeholders.",
+    "9. ANIMATION: Use Framer Motion for simple fade-ins on scroll. Don't overdo it. Speed is key."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "Avoid generic AI slop. Make it look like a custom French garage site.",
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur) for the sticky header.",
+    "Every interaction needs micro-animations - hover states, transitions.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "All interactive and key informational elements MUST include a `data-testid` attribute."
+  ]
+}
