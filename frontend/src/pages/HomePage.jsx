@@ -654,6 +654,29 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* Quote CTA Section */}
+      <section className="py-16 bg-amber-500" data-testid="quote-cta-section">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="font-heading text-3xl md:text-4xl font-bold text-black uppercase tracking-tight mb-4">
+            Besoin d'un devis ?
+          </h2>
+          <p className="text-black/80 text-lg mb-8 max-w-2xl mx-auto">
+            Envoyez-nous votre plaque d'immatriculation et la pièce recherchée. 
+            Nous vous répondons rapidement avec un devis personnalisé !
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button onClick={() => setQuoteModalOpen(true)} size="lg" className="bg-black hover:bg-zinc-800 text-white font-bold px-8 py-6 text-lg" data-testid="cta-quote-btn">
+              <FileText className="h-5 w-5 mr-2" /> Demander un devis gratuit
+            </Button>
+            <Button asChild size="lg" variant="outline" className="border-2 border-black text-black hover:bg-black hover:text-white font-bold px-8 py-6 text-lg">
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="h-5 w-5 mr-2" /> WhatsApp Pro
+              </a>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Contact Section */}
       <section className="py-16 bg-gray-100" data-testid="contact-section">
         <div className="container mx-auto px-4">
