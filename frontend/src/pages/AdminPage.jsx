@@ -304,6 +304,295 @@ const DeleteDialog = ({ open, onClose, onConfirm, productName }) => (
   </Dialog>
 );
 
+// Quote status badge
+const QuoteStatusBadge = ({ status }) => {
+  const variants = {
+    "pending": "bg-amber-500 text-white",
+    "processed": "bg-blue-500 text-white",
+    "quoted": "bg-green-500 text-white",
+    "rejected": "bg-red-500 text-white"
+  };
+  const labels = {
+    "pending": "En attente",
+    "processed": "Traité",
+    "quoted": "Devis envoyé",
+    "rejected": "Refusé"
+  };
+  return <Badge className={`${variants[status] || variants["pending"]} text-xs`}>{labels[status] || status}</Badge>;
+};
+
+// Quote detail dialog
+const QuoteDetailDialog = ({ open, onClose, quote, onStatusUpdate }) => {
+  const [status, setStatus] = useState(quote?.status || "pending");
+  const [notes, setNotes] = useState(quote?.admin_notes || "");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (quote) {
+      setStatus(quote.status);
+      setNotes(quote.admin_notes || "");
+    }
+  }, [quote]);
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("admin_token");
+      await axios.put(`${API}/quotes/${quote.id}`, {
+        status,
+        admin_notes: notes
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success("Devis mis à jour");
+      onStatusUpdate();
+      onClose();
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!quote) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="bg-white sm:max-w-lg" data-testid="quote-detail-dialog">
+        <DialogHeader>
+          <DialogTitle className="font-heading text-xl flex items-center gap-2">
+            <FileText className="h-5 w-5 text-red-600" />
+            Détail de la demande
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 mt-2">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label className="text-gray-500 text-xs">Nom</Label>
+              <p className="font-medium">{quote.name}</p>
+            </div>
+            <div>
+              <Label className="text-gray-500 text-xs">Téléphone</Label>
+              <a href={`tel:${quote.phone}`} className="font-medium text-blue-600 flex items-center gap-1">
+                <Phone className="h-3 w-3" /> {quote.phone}
+              </a>
+            </div>
+          </div>
+          <div>
+            <Label className="text-gray-500 text-xs">Email</Label>
+            <a href={`mailto:${quote.email}`} className="font-medium text-blue-600 flex items-center gap-1">
+              <Mail className="h-3 w-3" /> {quote.email}
+            </a>
+          </div>
+          <div>
+            <Label className="text-gray-500 text-xs">Plaque / VIN</Label>
+            <p className="font-mono font-bold text-lg bg-gray-100 px-3 py-2 rounded">{quote.plate_or_vin}</p>
+          </div>
+          <div>
+            <Label className="text-gray-500 text-xs">Pièce recherchée</Label>
+            <p className="bg-gray-50 p-3 rounded border text-sm">{quote.part_description}</p>
+          </div>
+          <div className="border-t pt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Statut</Label>
+                <Select value={status} onValueChange={setStatus}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">En attente</SelectItem>
+                    <SelectItem value="processed">Traité</SelectItem>
+                    <SelectItem value="quoted">Devis envoyé</SelectItem>
+                    <SelectItem value="rejected">Refusé</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-gray-500 text-xs">Date demande</Label>
+                <p className="text-sm">{new Date(quote.created_at).toLocaleString('fr-FR')}</p>
+              </div>
+            </div>
+          </div>
+          <div>
+            <Label>Notes admin</Label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Notes internes (non visibles par le client)"
+              className="w-full min-h-[80px] px-3 py-2 border rounded-md text-sm"
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Fermer</Button>
+          <Button className="bg-red-600 hover:bg-red-700" onClick={handleSave} disabled={loading}>
+            {loading ? "Sauvegarde..." : "Sauvegarder"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// Quotes Management Component
+const QuotesManagement = () => {
+  const [quotes, setQuotes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedQuote, setSelectedQuote] = useState(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [stats, setStats] = useState({ total: 0, pending: 0, processed: 0, quoted: 0 });
+
+  useEffect(() => {
+    fetchQuotes();
+    fetchStats();
+  }, []);
+
+  const fetchQuotes = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("admin_token");
+      const response = await axios.get(`${API}/quotes`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setQuotes(response.data);
+    } catch (error) {
+      toast.error("Erreur lors du chargement des devis");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem("admin_token");
+      const response = await axios.get(`${API}/quotes/stats/summary`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setStats(response.data);
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    }
+  };
+
+  const handleDelete = async (quoteId) => {
+    if (!window.confirm("Supprimer cette demande de devis ?")) return;
+    try {
+      const token = localStorage.getItem("admin_token");
+      await axios.delete(`${API}/quotes/${quoteId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success("Devis supprimé");
+      fetchQuotes();
+      fetchStats();
+    } catch (error) {
+      toast.error("Erreur lors de la suppression");
+    }
+  };
+
+  const openDetail = (quote) => {
+    setSelectedQuote(quote);
+    setDetailOpen(true);
+  };
+
+  return (
+    <div>
+      {/* Stats cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <Card className="bg-white">
+          <CardContent className="p-4 text-center">
+            <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
+            <p className="text-sm text-gray-500">Total demandes</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-amber-50 border-amber-200">
+          <CardContent className="p-4 text-center">
+            <p className="text-3xl font-bold text-amber-600">{stats.pending}</p>
+            <p className="text-sm text-amber-700">En attente</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-blue-50 border-blue-200">
+          <CardContent className="p-4 text-center">
+            <p className="text-3xl font-bold text-blue-600">{stats.processed}</p>
+            <p className="text-sm text-blue-700">Traités</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-green-50 border-green-200">
+          <CardContent className="p-4 text-center">
+            <p className="text-3xl font-bold text-green-600">{stats.quoted}</p>
+            <p className="text-sm text-green-700">Devis envoyés</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quotes table */}
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-50">
+                <TableHead className="font-bold">Date</TableHead>
+                <TableHead className="font-bold">Client</TableHead>
+                <TableHead className="font-bold">Plaque/VIN</TableHead>
+                <TableHead className="font-bold">Pièce</TableHead>
+                <TableHead className="font-bold">Statut</TableHead>
+                <TableHead className="font-bold text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+                  </TableCell>
+                </TableRow>
+              ) : quotes.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                    Aucune demande de devis
+                  </TableCell>
+                </TableRow>
+              ) : (
+                quotes.map((quote) => (
+                  <TableRow key={quote.id} className={quote.status === "pending" ? "bg-amber-50" : ""} data-testid={`quote-row-${quote.id}`}>
+                    <TableCell className="text-sm text-gray-500">
+                      {new Date(quote.created_at).toLocaleDateString('fr-FR')}
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{quote.name}</p>
+                        <p className="text-xs text-gray-500">{quote.email}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-mono font-bold text-sm">{quote.plate_or_vin}</TableCell>
+                    <TableCell className="max-w-xs truncate text-sm">{quote.part_description}</TableCell>
+                    <TableCell><QuoteStatusBadge status={quote.status} /></TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="sm" onClick={() => openDetail(quote)} data-testid={`view-quote-${quote.id}`}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700" onClick={() => handleDelete(quote.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <QuoteDetailDialog
+        open={detailOpen}
+        onClose={() => { setDetailOpen(false); setSelectedQuote(null); }}
+        quote={selectedQuote}
+        onStatusUpdate={() => { fetchQuotes(); fetchStats(); }}
+      />
+    </div>
+  );
+};
+
 // Main Admin Dashboard
 const AdminDashboard = ({ onLogout }) => {
   const navigate = useNavigate();
