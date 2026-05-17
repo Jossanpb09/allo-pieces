@@ -1,28 +1,44 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Search, Phone, MessageCircle, ExternalLink, MapPin, Clock, Truck, Car, Lightbulb, Eye, Thermometer, Wrench, Settings, CreditCard, ShieldCheck, Menu, X, FileText, Check, Mail } from "lucide-react";
+import { Search, Phone, MessageCircle, ExternalLink, MapPin, Clock, Truck, Car, Lightbulb, Eye, Thermometer, Wrench, Settings, CreditCard, ShieldCheck, Menu, X, FileText, Check, Mail, Package, Award, ChevronDown, ChevronUp, Headphones, Briefcase, ShoppingBag, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import PromotionsBanner from "@/components/public/PromotionsBanner";
+import ProRegistrationModal from "@/components/public/ProRegistrationModal";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const BASE = process.env.REACT_APP_BACKEND_URL;
 
-// Logo component - using provided text styling
-const Logo = ({ className = "h-12" }) => (
-  <div className={`flex items-center gap-2 ${className}`}>
-    <div className="bg-red-600 rounded-md p-2">
-      <Car className="h-6 w-6 text-white" />
+// Logo component - dynamic from settings if available
+const Logo = ({ className = "h-12", dynamicLogoUrl = null, animated = true }) => {
+  if (dynamicLogoUrl) {
+    return (
+      <div className={`flex items-center ${className}`} data-testid="site-logo">
+        <img
+          src={dynamicLogoUrl}
+          alt="ALLO PIECES 76"
+          className={`h-10 sm:h-12 object-contain ${animated ? "animate-logo-pulse" : ""}`}
+        />
+      </div>
+    );
+  }
+  return (
+    <div className={`flex items-center gap-2 ${className}`} data-testid="site-logo">
+      <div className={`bg-red-600 rounded-md p-2 ${animated ? "animate-logo-pulse" : ""}`}>
+        <Car className="h-6 w-6 text-white" />
+      </div>
+      <div className="font-heading font-bold text-xl uppercase tracking-tight">
+        <span className="text-red-600">ALLO</span>
+        <span className="text-white"> PIECES </span>
+        <span className="text-red-600">76</span>
+      </div>
     </div>
-    <div className="font-heading font-bold text-xl uppercase tracking-tight">
-      <span className="text-red-600">ALLO</span>
-      <span className="text-white"> PIECES </span>
-      <span className="text-red-600">76</span>
-    </div>
-  </div>
-);
+  );
+};
 
 // Contact info
 const CONTACTS = {
@@ -67,12 +83,22 @@ Nom : ${product.name}
 Véhicule : ${product.vehicle || "À préciser"}
 Merci de confirmer le prix, la compatibilité et le délai.`);
 
+  const thumb = product.images?.[0]?.thumbnail_url || product.images?.[0]?.url;
+
   return (
     <Card className="product-card bg-white border border-gray-100 overflow-hidden" data-testid={`product-card-${product.id}`}>
+      {thumb && (
+        <div className="aspect-[4/3] bg-gray-50 overflow-hidden">
+          <img src={`${BASE}${thumb}`} alt={product.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+        </div>
+      )}
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-2">
           <span className="font-heading font-bold text-sm text-gray-500 uppercase tracking-wide">{product.reference}</span>
-          <StockBadge stock={product.stock} />
+          <div className="flex items-center gap-1">
+            {product.featured && <Star className="h-4 w-4 text-amber-500 fill-amber-500" />}
+            <StockBadge stock={product.stock} />
+          </div>
         </div>
         <h3 className="font-bold text-gray-900 mb-1 line-clamp-2">{product.name}</h3>
         {product.vehicle && <p className="text-sm text-gray-500 mb-3">{product.vehicle}</p>}
@@ -97,38 +123,50 @@ Merci de confirmer le prix, la compatibilité et le délai.`);
 };
 
 // Header component
-const Header = ({ onPaymentClick, onQuoteClick }) => {
+const Header = ({ onPaymentClick, onQuoteClick, dynamicLogoUrl, logoAnimEnabled = true, toggles = {}, dynamicLinks = [], onProClick }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const t = (key, def = true) => (toggles[key] !== undefined ? toggles[key] : def);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass-dark border-b border-white/10" data-testid="main-header">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Logo />
+          <Logo dynamicLogoUrl={dynamicLogoUrl} animated={logoAnimEnabled} />
           
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-3">
             <Button onClick={onQuoteClick} className="bg-amber-500 hover:bg-amber-600 text-black font-bold" data-testid="header-quote-btn">
               <FileText className="h-4 w-4 mr-2" /> Devis gratuit
             </Button>
-            <Button asChild variant="ghost" className="text-white hover:bg-white/10" data-testid="header-whatsapp-btn">
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="h-4 w-4 mr-2 text-green-400" /> Professionnels
-              </a>
-            </Button>
+            {t("show_pro_registration") && (
+              <Button onClick={onProClick} variant="ghost" className="text-white hover:bg-white/10" data-testid="header-pro-btn">
+                <Briefcase className="h-4 w-4 mr-2 text-blue-400" /> Espace Pro
+              </Button>
+            )}
+            {t("show_whatsapp") && (
+              <Button asChild variant="ghost" className="text-white hover:bg-white/10" data-testid="header-whatsapp-btn">
+                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="h-4 w-4 mr-2 text-green-400" /> WhatsApp
+                </a>
+              </Button>
+            )}
             <Button asChild variant="ghost" className="text-white hover:bg-white/10" data-testid="header-phone-btn">
               <a href={`tel:${CONTACTS.phone}`}>
-                <Phone className="h-4 w-4 mr-2 text-red-400" /> Particuliers
+                <Phone className="h-4 w-4 mr-2 text-red-400" /> Appeler
               </a>
             </Button>
-            <Button asChild variant="ghost" className="text-white hover:bg-white/10" data-testid="header-leboncoin-btn">
-              <a href={CONTACTS.leboncoin} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="h-4 w-4 mr-2 text-orange-400" /> Leboncoin
-              </a>
-            </Button>
-            <Button onClick={onPaymentClick} className="bg-red-600 hover:bg-red-700 text-white" data-testid="header-payment-btn">
-              <CreditCard className="h-4 w-4 mr-2" /> Payer en ligne
-            </Button>
+            {t("show_leboncoin") && (
+              <Button asChild variant="ghost" className="text-white hover:bg-white/10" data-testid="header-leboncoin-btn">
+                <a href={CONTACTS.leboncoin} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-4 w-4 mr-2 text-orange-400" /> Leboncoin
+                </a>
+              </Button>
+            )}
+            {t("show_stripe_payment") && (
+              <Button onClick={onPaymentClick} className="bg-red-600 hover:bg-red-700 text-white" data-testid="header-payment-btn">
+                <CreditCard className="h-4 w-4 mr-2" /> Payer en ligne
+              </Button>
+            )}
           </nav>
 
           {/* Mobile menu button */}
@@ -143,24 +181,35 @@ const Header = ({ onPaymentClick, onQuoteClick }) => {
             <Button onClick={() => { onQuoteClick(); setMenuOpen(false); }} className="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold">
               <FileText className="h-4 w-4 mr-2" /> Demander un devis gratuit
             </Button>
-            <Button asChild variant="ghost" className="w-full justify-start text-white hover:bg-white/10">
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="h-4 w-4 mr-2 text-green-400" /> Professionnels (WhatsApp)
-              </a>
-            </Button>
+            {t("show_pro_registration") && (
+              <Button onClick={() => { onProClick(); setMenuOpen(false); }} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                <Briefcase className="h-4 w-4 mr-2" /> Espace Pro / Garage
+              </Button>
+            )}
+            {t("show_whatsapp") && (
+              <Button asChild variant="ghost" className="w-full justify-start text-white hover:bg-white/10">
+                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="h-4 w-4 mr-2 text-green-400" /> WhatsApp Pro
+                </a>
+              </Button>
+            )}
             <Button asChild variant="ghost" className="w-full justify-start text-white hover:bg-white/10">
               <a href={`tel:${CONTACTS.phone}`}>
                 <Phone className="h-4 w-4 mr-2 text-red-400" /> Particuliers (Appeler)
               </a>
             </Button>
-            <Button asChild variant="ghost" className="w-full justify-start text-white hover:bg-white/10">
-              <a href={CONTACTS.leboncoin} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="h-4 w-4 mr-2 text-orange-400" /> Boutique Leboncoin
-              </a>
-            </Button>
-            <Button onClick={() => { onPaymentClick(); setMenuOpen(false); }} className="w-full bg-red-600 hover:bg-red-700 text-white">
-              <CreditCard className="h-4 w-4 mr-2" /> Payer en ligne
-            </Button>
+            {t("show_leboncoin") && (
+              <Button asChild variant="ghost" className="w-full justify-start text-white hover:bg-white/10">
+                <a href={CONTACTS.leboncoin} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-4 w-4 mr-2 text-orange-400" /> Boutique Leboncoin
+                </a>
+              </Button>
+            )}
+            {t("show_stripe_payment") && (
+              <Button onClick={() => { onPaymentClick(); setMenuOpen(false); }} className="w-full bg-red-600 hover:bg-red-700 text-white">
+                <CreditCard className="h-4 w-4 mr-2" /> Payer en ligne
+              </Button>
+            )}
           </nav>
         )}
       </div>
@@ -464,18 +513,115 @@ const Footer = () => (
   </footer>
 );
 
+// FAQ Section component
+const FAQ_ITEMS = [
+  {
+    q: "Quels sont vos délais d'expédition ?",
+    a: "Nous expédions sous 48h ouvrées toutes les pièces disponibles en stock. Pour les pièces sur commande, le délai est généralement de 24 à 72h supplémentaires selon le fournisseur."
+  },
+  {
+    q: "Vos pièces sont-elles neuves et garanties ?",
+    a: "Oui, 100% de nos pièces sont neuves et garanties. Nous travaillons uniquement avec des partenaires fiables pour vous assurer une qualité optimale et la compatibilité avec votre véhicule."
+  },
+  {
+    q: "Comment savoir si la pièce est compatible avec mon véhicule ?",
+    a: "Envoyez-nous votre plaque d'immatriculation ou votre numéro VIN ainsi que le modèle, l'année et la motorisation. Notre équipe vérifie la compatibilité avant toute expédition pour éviter les erreurs."
+  },
+  {
+    q: "Proposez-vous des tarifs pour les professionnels (garages, carrossiers) ?",
+    a: "Oui, nous avons un espace dédié aux professionnels avec des tarifs préférentiels et un accompagnement personnalisé. Contactez-nous via WhatsApp Pro pour bénéficier de ces avantages."
+  }
+];
+
+const FAQSection = () => {
+  const [openIndex, setOpenIndex] = useState(0);
+
+  return (
+    <section className="py-16 bg-gray-50" data-testid="faq-section">
+      <div className="container mx-auto px-4">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-10">
+            <Badge className="bg-red-100 text-red-700 border-red-200 mb-4 px-3 py-1">FAQ</Badge>
+            <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 uppercase tracking-tight mb-3">
+              Questions fréquentes
+            </h2>
+            <p className="text-gray-600">Tout ce que vous devez savoir avant de commander.</p>
+          </div>
+
+          <div className="space-y-3">
+            {FAQ_ITEMS.map((item, idx) => {
+              const open = openIndex === idx;
+              return (
+                <div
+                  key={idx}
+                  className={`bg-white rounded-xl border-2 transition-all overflow-hidden ${open ? 'border-red-600 shadow-lg shadow-red-600/10' : 'border-gray-200'}`}
+                  data-testid={`faq-item-${idx}`}
+                >
+                  <button
+                    onClick={() => setOpenIndex(open ? -1 : idx)}
+                    className="w-full flex items-center justify-between gap-4 p-5 text-left hover:bg-gray-50 transition-colors"
+                    data-testid={`faq-toggle-${idx}`}
+                  >
+                    <span className="font-heading font-bold text-gray-900 text-base sm:text-lg">{item.q}</span>
+                    {open ? (
+                      <ChevronUp className="h-5 w-5 text-red-600 flex-shrink-0" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                    )}
+                  </button>
+                  {open && (
+                    <div className="px-5 pb-5 pt-0 text-gray-600 text-sm sm:text-base leading-relaxed border-t border-gray-100" data-testid={`faq-answer-${idx}`}>
+                      <p className="pt-4">{item.a}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="text-center mt-10">
+            <p className="text-gray-600 mb-4">Vous ne trouvez pas la réponse à votre question ?</p>
+            <Button asChild className="btn-whatsapp text-white font-bold">
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" data-testid="faq-whatsapp-btn">
+                <MessageCircle className="h-5 w-5 mr-2" /> Contactez-nous sur WhatsApp
+              </a>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 // Main HomePage component
 const HomePage = () => {
   const [products, setProducts] = useState([]);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [quoteModalOpen, setQuoteModalOpen] = useState(false);
+  const [proModalOpen, setProModalOpen] = useState(false);
+  const [toggles, setToggles] = useState({});
+  const [settings, setSettings] = useState(null);
+  const [dynamicLinks, setDynamicLinks] = useState([]);
+
+  useEffect(() => {
+    // Initial fetch of public config (toggles, settings, quicklinks)
+    axios.get(`${API}/feature-toggles`).then((r) => setToggles(r.data || {})).catch(() => {});
+    axios.get(`${API}/settings`).then((r) => setSettings(r.data)).catch(() => {});
+    axios.get(`${API}/quicklinks`).then((r) => setDynamicLinks(r.data || [])).catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetchProducts();
   }, [searchQuery, selectedCategory]);
+
+  useEffect(() => {
+    // Fetch featured products separately
+    axios.get(`${API}/products?featured=true`).then((r) => setFeaturedProducts((r.data || []).filter((p) => p.featured).slice(0, 8))).catch(() => {});
+  }, []);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -483,20 +629,23 @@ const HomePage = () => {
       const params = new URLSearchParams();
       if (searchQuery) params.append("search", searchQuery);
       if (selectedCategory) params.append("category", selectedCategory);
-      
       const response = await axios.get(`${API}/products?${params.toString()}`);
       setProducts(response.data);
     } catch (error) {
-      console.error("Error fetching products:", error);
       toast.error("Erreur lors du chargement des produits");
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
+
+  const t = (key, defaultValue = true) => (toggles[key] !== undefined ? toggles[key] : defaultValue);
+  const dynamicLogoUrl = settings?.logo_url ? `${BASE}${settings.logo_url}` : null;
+  const logoAnimEnabled = settings?.logo_animation_enabled !== false && t("logo_animation");
 
   return (
     <div className="min-h-screen bg-zinc-950">
-      <Header onPaymentClick={() => setPaymentModalOpen(true)} onQuoteClick={() => setQuoteModalOpen(true)} />
+      <Header onPaymentClick={() => setPaymentModalOpen(true)} onQuoteClick={() => setQuoteModalOpen(true)} dynamicLogoUrl={dynamicLogoUrl} logoAnimEnabled={logoAnimEnabled} toggles={toggles} dynamicLinks={dynamicLinks} onProClick={() => setProModalOpen(true)} />
+
+      {/* Promotions banner */}
+      {t("show_promotions") && <PromotionsBanner />}
       
       {/* Hero Section */}
       <section className="hero-bg pt-32 pb-20 px-4" data-testid="hero-section">
@@ -509,9 +658,21 @@ const HomePage = () => {
           <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-white uppercase tracking-tight mb-4 animate-fade-in-up animate-delay-100">
             Pièces Auto – Carrosserie & Mécanique
           </h1>
-          <p className="text-lg sm:text-xl text-gray-300 mb-8 animate-fade-in-up animate-delay-200">
-            Livraison partout en France 🇫🇷 | Paiement sécurisé
+          <p className="text-base sm:text-lg text-gray-200 mb-6 max-w-3xl mx-auto animate-fade-in-up animate-delay-200" data-testid="hero-tagline">
+            Pièces neuves pour voitures et utilitaires : pare-chocs, ailes, phares, radiateurs, rétroviseurs et plus encore. Stock disponible et commande rapide avec livraison partout en France.
           </p>
+
+          {/* Trust badges */}
+          <div className="flex flex-wrap justify-center gap-3 mb-8 animate-fade-in-up animate-delay-200" data-testid="trust-badges">
+            <div className="flex items-center gap-2 bg-red-600/20 border border-red-500/40 text-white px-4 py-2 rounded-full backdrop-blur-sm">
+              <Truck className="h-4 w-4 text-red-400" />
+              <span className="text-sm font-semibold">48h pour l'expédition — 100% pièces neuves et garanties</span>
+            </div>
+            <div className="flex items-center gap-2 bg-amber-500/20 border border-amber-400/40 text-white px-4 py-2 rounded-full backdrop-blur-sm">
+              <Award className="h-4 w-4 text-amber-300" />
+              <span className="text-sm font-semibold">5 ans d'expérience</span>
+            </div>
+          </div>
           
           {/* Search bar */}
           <div className="max-w-2xl mx-auto mb-8 animate-fade-in-up animate-delay-300">
@@ -533,24 +694,35 @@ const HomePage = () => {
             <Button onClick={() => setQuoteModalOpen(true)} className="bg-amber-500 hover:bg-amber-600 text-black font-bold px-6" data-testid="hero-quote-btn">
               <FileText className="h-5 w-5 mr-2" /> Demander un devis
             </Button>
-            <Button asChild className="btn-whatsapp text-white font-bold px-6" data-testid="hero-whatsapp-btn">
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="h-5 w-5 mr-2" /> WhatsApp Pro
-              </a>
-            </Button>
+            {t("show_whatsapp") && (
+              <Button asChild className="btn-whatsapp text-white font-bold px-6" data-testid="hero-whatsapp-btn">
+                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="h-5 w-5 mr-2" /> WhatsApp Pro
+                </a>
+              </Button>
+            )}
             <Button asChild className="bg-red-600 hover:bg-red-700 text-white font-bold px-6" data-testid="hero-phone-btn">
               <a href={`tel:${CONTACTS.phone}`}>
                 <Phone className="h-5 w-5 mr-2" /> Appeler
               </a>
             </Button>
-            <Button asChild variant="outline" className="border-orange-500 text-orange-400 hover:bg-orange-500 hover:text-white font-bold px-6" data-testid="hero-leboncoin-btn">
-              <a href={CONTACTS.leboncoin} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="h-5 w-5 mr-2" /> Leboncoin
-              </a>
-            </Button>
-            <Button onClick={() => setPaymentModalOpen(true)} variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900 font-bold px-6" data-testid="hero-payment-btn">
-              <CreditCard className="h-5 w-5 mr-2" /> Payer en ligne
-            </Button>
+            {t("show_pro_registration") && (
+              <Button onClick={() => setProModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6" data-testid="hero-pro-btn">
+                <Briefcase className="h-5 w-5 mr-2" /> Espace Pro / Garage
+              </Button>
+            )}
+            {t("show_leboncoin") && (
+              <Button asChild variant="outline" className="border-orange-500 text-orange-400 hover:bg-orange-500 hover:text-white font-bold px-6" data-testid="hero-leboncoin-btn">
+                <a href={CONTACTS.leboncoin} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-5 w-5 mr-2" /> Leboncoin
+                </a>
+              </Button>
+            )}
+            {t("show_stripe_payment") && (
+              <Button onClick={() => setPaymentModalOpen(true)} variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900 font-bold px-6" data-testid="hero-payment-btn">
+                <CreditCard className="h-5 w-5 mr-2" /> Payer en ligne
+              </Button>
+            )}
           </div>
         </div>
       </section>
@@ -590,6 +762,22 @@ const HomePage = () => {
           )}
         </div>
       </section>
+
+      {/* Featured Products Section */}
+      {t("show_featured_products") && featuredProducts.length > 0 && (
+        <section className="py-12 bg-zinc-900" data-testid="featured-section">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center gap-2 justify-center mb-8">
+              <Star className="h-6 w-6 text-amber-500 fill-amber-500" />
+              <h2 className="font-heading text-2xl md:text-3xl font-bold text-white uppercase tracking-tight">Produits vedettes</h2>
+              <Star className="h-6 w-6 text-amber-500 fill-amber-500" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {featuredProducts.map((p) => <ProductCard key={p.id} product={p} />)}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Products Section */}
       <section className="py-16 bg-gray-100" data-testid="products-section">
@@ -653,6 +841,73 @@ const HomePage = () => {
           </p>
         </div>
       </section>
+
+      {/* Why Choose Us Section */}
+      {t("show_why_choose_us") && (
+      <section className="py-16 bg-zinc-950" data-testid="why-choose-section">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <Badge className="bg-red-600/20 text-red-400 border-red-500/40 mb-4 px-3 py-1">NOTRE EXPERTISE</Badge>
+            <h2 className="font-heading text-3xl md:text-4xl font-bold text-white uppercase tracking-tight mb-4">
+              Pourquoi choisir <span className="text-red-500">Allo Pieces 76</span> ?
+            </h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              Une équipe expérimentée, un stock disponible et un accompagnement personnalisé pour chaque client.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            <div className="group relative bg-zinc-900 border border-zinc-800 rounded-xl p-6 hover:border-red-600 transition-all duration-300 hover:-translate-y-1" data-testid="why-card-carrosserie">
+              <div className="absolute -top-4 left-6 bg-red-600 rounded-lg p-3 shadow-lg shadow-red-600/30">
+                <Package className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="font-heading font-bold text-white text-lg uppercase mt-6 mb-3">Vente de pièces de carrosserie neuves</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Quel que soit le modèle, nous proposons les pièces qu'il vous faut : carrosserie, éclairage, rétroviseurs, capots, pare-chocs, radiateurs, ventilateurs et de nombreux autres éléments.
+              </p>
+            </div>
+
+            <div className="group relative bg-zinc-900 border border-zinc-800 rounded-xl p-6 hover:border-red-600 transition-all duration-300 hover:-translate-y-1" data-testid="why-card-commande">
+              <div className="absolute -top-4 left-6 bg-amber-500 rounded-lg p-3 shadow-lg shadow-amber-500/30">
+                <ShoppingBag className="h-6 w-6 text-black" />
+              </div>
+              <h3 className="font-heading font-bold text-white text-lg uppercase mt-6 mb-3">Commande sur mesure</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Vous ne trouvez pas votre pièce en stock ? Nous passons commande directement auprès de nos partenaires pour vous fournir la pièce exacte correspondant à votre véhicule, dans les meilleurs délais.
+              </p>
+            </div>
+
+            <div className="group relative bg-zinc-900 border border-zinc-800 rounded-xl p-6 hover:border-red-600 transition-all duration-300 hover:-translate-y-1" data-testid="why-card-conseil">
+              <div className="absolute -top-4 left-6 bg-green-600 rounded-lg p-3 shadow-lg shadow-green-600/30">
+                <Headphones className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="font-heading font-bold text-white text-lg uppercase mt-6 mb-3">Conseil et accompagnement client</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Notre équipe vous guide dans le choix de la bonne référence en fonction du modèle, de l'année et de la motorisation de votre voiture. Nous vous aidons à éviter les erreurs de compatibilité et à trouver la solution la plus adaptée à vos besoins.
+              </p>
+            </div>
+
+            <div className="group relative bg-zinc-900 border border-zinc-800 rounded-xl p-6 hover:border-red-600 transition-all duration-300 hover:-translate-y-1" data-testid="why-card-pro">
+              <div className="absolute -top-4 left-6 bg-blue-600 rounded-lg p-3 shadow-lg shadow-blue-600/30">
+                <Briefcase className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="font-heading font-bold text-white text-lg uppercase mt-6 mb-3">Service réservé aux professionnels</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Garagistes, carrossiers ou revendeurs, bénéficiez de tarifs préférentiels et d'un accompagnement dédié pour vos commandes régulières.
+              </p>
+              {t("show_pro_registration") && (
+                <Button onClick={() => setProModalOpen(true)} size="sm" className="mt-4 bg-blue-600 hover:bg-blue-700 text-white text-xs" data-testid="why-pro-cta">
+                  Devenir partenaire Pro →
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+      )}
+
+      {/* FAQ Section */}
+      {t("show_faq") && <FAQSection />}
 
       {/* Quote CTA Section */}
       <section className="py-16 bg-amber-500" data-testid="quote-cta-section">
@@ -757,6 +1012,7 @@ const HomePage = () => {
       <MobileBottomBar />
       <PaymentModal open={paymentModalOpen} onClose={() => setPaymentModalOpen(false)} />
       <QuoteModal open={quoteModalOpen} onClose={() => setQuoteModalOpen(false)} />
+      <ProRegistrationModal open={proModalOpen} onClose={() => setProModalOpen(false)} />
     </div>
   );
 };

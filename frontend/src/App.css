@@ -84,3 +84,23 @@
 [data-sonner-toast] {
     font-family: 'Manrope', sans-serif;
 }
+
+
+/* Logo subtle animation */
+@keyframes logo-pulse {
+    0%, 100% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.04); filter: brightness(1.1); }
+}
+
+.animate-logo-pulse {
+    animation: logo-pulse 3s ease-in-out infinite;
+}
+
+@keyframes logo-slide-in {
+    from { transform: translateX(-12px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.animate-logo-slide-in {
+    animation: logo-slide-in 0.8s ease-out;
+}

@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 
 class AlloPieces76APITester:
-    def __init__(self, base_url="https://allocarparts.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://allo-pieces.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0
@@ -219,7 +219,7 @@ class AlloPieces76APITester:
         payment_data = {
             "amount": 50.00,
             "description": "Test payment",
-            "origin_url": "https://allocarparts.preview.emergentagent.com"
+            "origin_url": "https://allo-pieces.preview.emergentagent.com"
         }
         
         success, response = self.run_test(
