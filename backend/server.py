@@ -423,7 +423,10 @@ async def get_product(product_id: str):
 
 @api_router.post("/products", response_model=Product)
 async def create_product(product: ProductCreate, admin: dict = Depends(get_current_admin)):
-    new_product = Product(**product.model_dump())
+    data = product.model_dump()
+    if data.get("images") is None:
+        data["images"] = []
+    new_product = Product(**data)
     doc = new_product.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
     doc['updated_at'] = doc['updated_at'].isoformat()
@@ -485,8 +488,9 @@ async def permanently_delete_product(product_id: str, admin: dict = Depends(get_
     for img in (existing.get("images") or []):
         if img.get("url"):
             delete_file_by_url(img["url"])
-    if existing.get("pdf", {}).get("url"):
-        delete_file_by_url(existing["pdf"]["url"])
+    pdf_url = (existing.get("pdf") or {}).get("url")
+    if pdf_url:
+        delete_file_by_url(pdf_url)
     await db.products.delete_one({"id": product_id})
     await log_action(admin["email"], "delete_permanent", "product", product_id, f"Suppression définitive '{existing.get('name','')}'")
     return {"message": "Produit supprimé définitivement"}

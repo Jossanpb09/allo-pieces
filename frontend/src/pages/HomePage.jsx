@@ -15,12 +15,14 @@ const BASE = process.env.REACT_APP_BACKEND_URL;
 
 // Logo component - dynamic from settings if available
 const Logo = ({ className = "h-12", dynamicLogoUrl = null, animated = true }) => {
-  if (dynamicLogoUrl) {
+  const [imgError, setImgError] = useState(false);
+  if (dynamicLogoUrl && !imgError) {
     return (
       <div className={`flex items-center ${className}`} data-testid="site-logo">
         <img
           src={dynamicLogoUrl}
           alt="ALLO PIECES 76"
+          onError={() => setImgError(true)}
           className={`h-10 sm:h-12 object-contain ${animated ? "animate-logo-pulse" : ""}`}
         />
       </div>

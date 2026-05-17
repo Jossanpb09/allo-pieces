@@ -1,69 +1,119 @@
-# ALLO PIECES 76 - PRD (Product Requirements Document)
+# ALLO PIECES 76 — PRD
 
-## Problème original
-Site web pour ALLO PIECES 76 - Magasin de pièces auto situé en Normandie (76).
+## Original Problem Statement
+Site e-commerce moderne et mobile-first pour la boutique de pièces auto **ALLO PIECES 76**. 100% en français, esthétique automobile rouge/noir/blanc.
 
-## Architecture technique
-- **Backend**: FastAPI + MongoDB
-- **Frontend**: React + TailwindCSS + Shadcn UI
-- **Paiement**: Stripe Checkout (clé TEST)
-- **Auth**: JWT pour admin
+Fonctionnalités clés :
+- Catalogue produits public avec recherche + catégories
+- Système de devis (Devis)
+- Dashboard Admin JWT-secured (`/admin`)
+- Page Pro protégée par code (`/pro`)
+- Intégration Stripe (TEST → LIVE plus tard)
+- Phase 2 : admin enrichi (uploads, CSV import, promotions, paramétrage, audit, etc.)
 
-## Fonctionnalités implémentées ✅
+## Stack
+- **Frontend** : React + Tailwind + Shadcn UI (`/app/frontend`)
+- **Backend** : FastAPI + Motor (`/app/backend/server.py`)
+- **DB** : MongoDB
+- **Paiement** : Stripe (mode TEST)
+- **Stockage fichiers** : local `/app/backend/uploads/` (mount FastAPI StaticFiles → `/uploads`)
+- **Image processing** : Pillow (resize 2048px max + WebP + thumbnail 300x300)
+- **CSV** : pandas/csv standard
 
-### Page d'accueil (/)
-- ✅ Header sticky avec logo ALLO PIECES 76 + bouton "Devis gratuit"
-- ✅ Hero avec recherche de produits et boutons CTA
-- ✅ 6 catégories cliquables avec filtrage
-- ✅ Catalogue produits avec badges stock (En stock / Sur commande / Rupture)
-- ✅ Section livraison France (métropolitaine, 24-72h, retrait possible)
-- ✅ Section "Besoin d'un devis ?" (fond jaune, CTA visible)
-- ✅ Section Contact 3 colonnes (contacts, horaires, devis rapide)
-- ✅ Footer complet avec email allopiece27@gmail.com
-- ✅ Barre mobile fixe en bas (APPELER rouge / WHATSAPP vert)
+## Personas
+1. **Particulier** : cherche une pièce pour sa voiture, demande devis ou commande.
+2. **Garagiste/Pro** : tarifs préférentiels, formulaire d'inscription Pro, contact direct.
+3. **Admin (gérant boutique)** : gère catalogue, devis, promotions, paramètres — débutant, doit pouvoir tout faire sans code.
 
-### Système de Devis
-- ✅ Formulaire modal (Nom, Email, Téléphone, Plaque/VIN, Pièce)
-- ✅ Bouton accessible depuis header, hero, section CTA, section contact
-- ✅ Stockage en base MongoDB
-- ✅ Gestion admin avec statistiques
+## Core Requirements (Phase 1 + Phase 2)
 
-### Page Admin (/admin)
-- ✅ Login JWT (admin@allopieces76.fr / admin123)
-- ✅ Onglet Produits: CRUD complet + recherche
-- ✅ Onglet Devis: Liste + stats + détail + mise à jour statut
+### Phase 1 — Marketing & UX (FAIT)
+- Titre + bullets confiance (48h expédition, 5 ans expérience)
+- Section "Pourquoi choisir Allo Pieces 76 ?" (4 cartes)
+- FAQ 4 questions/réponses (accordéon)
+- Sections conditionnelles (toggles ON/OFF côté admin)
 
-### Page Pro (/pro)
-- ✅ Gatekeeper avec code d'accès (jossanpb09)
-- ✅ Notes internes, fournisseurs, références prioritaires
+### Phase 2 — Admin complet (FAIT — 2026-05-17)
+- Multi-image upload (resize/WebP/thumb)
+- PDF upload (max 10MB)
+- Logo upload + animation (pulse) + couleurs brand
+- Import CSV (template + preview + mapping auto + rapport d'erreurs + confirm)
+- Promotions CRUD + bannière homepage (carrousel + planning ON/OFF)
+- Quick Links CRUD + reorder + toggle (téléphone, WhatsApp, Leboncoin, email…)
+- Feature Toggles (10 options) — activer/désactiver sections du site
+- Site Settings (logo, animation, couleurs, contacts)
+- Inscription Pro publique → notification WhatsApp + email (mocked) + validation admin
+- Mot de passe oublié (token dev mode)
+- Soft-delete corbeille + restauration + suppression définitive
+- Audit Log (toutes les actions admin)
+- Produits épinglés (vedettes affichées en haut de homepage)
+- Analytics Dashboard (compteurs + activité récente)
+- Page "How To" / guide d'utilisation 5 étapes
 
-### Paiement Stripe
-- ✅ Modal avec montant personnalisé
-- ✅ Redirection Stripe Checkout
-- ✅ Pages success/cancel
+## API Endpoints
 
-### Mobile-First
-- ✅ Design responsive complet
-- ✅ Menu hamburger fonctionnel
-- ✅ Barre fixe bas (APPELER / WHATSAPP)
+### Public
+- `GET /api/products` (search, category, featured)
+- `GET /api/products/{id}`
+- `POST /api/quotes`
+- `POST /api/pro-registrations`
+- `POST /api/pro/validate` (code pro)
+- `GET /api/promotions` (actives uniquement)
+- `GET /api/quicklinks` (actifs)
+- `GET /api/feature-toggles`
+- `GET /api/settings`
+- `GET /api/categories`
+- `POST /api/payments/checkout` (Stripe)
 
-## Contacts intégrés
-- Email: allopiece27@gmail.com
-- WhatsApp Pro: +33 6 86 72 13 72
-- Téléphone: 02 32 51 04 33
-- Leboncoin: https://www.leboncoin.fr/boutique/6876238/allo_pieces_76.htm
-- Horaires: Lun-Sam 09h30-18h30, Dim fermé
+### Auth
+- `POST /api/auth/login`
+- `POST /api/auth/register`
+- `GET /api/auth/me`
+- `POST /api/auth/forgot-password`
+- `POST /api/auth/reset-password`
 
-## Tests effectués
-- Backend: 92.3% succès
-- Frontend: 98% succès
-- Global: 95% succès
+### Admin (JWT bearer required)
+- Products CRUD + soft-delete + `/restore` + `/permanent` + `/pin` + `/trash/list`
+- `POST /api/admin/upload/images` / `pdf` / `logo` / `promotion-image`
+- CSV: `GET /admin/products/csv-template`, `POST /admin/products/csv-preview`, `POST /admin/products/csv-import-confirm`
+- Promotions CRUD `/admin/promotions`
+- Quick Links CRUD + reorder `/admin/quicklinks`
+- Feature toggles `/admin/feature-toggles`
+- Site settings `PUT /admin/settings`
+- Pro registrations `/admin/pro-registrations`
+- `/admin/audit-log`
+- `/admin/analytics`
 
-## En attente (fournis par le client)
-- [ ] Logo officiel
-- [ ] Clés Stripe LIVE
-- [ ] Clé API email (optionnel)
+## DB Collections
+- `users` (admins)
+- `products` (with images[], pdf, featured, is_deleted)
+- `quotes` (devis)
+- `payment_transactions` (Stripe)
+- `promotions`
+- `quicklinks`
+- `feature_toggles`
+- `site_settings` (singleton)
+- `pro_registrations`
+- `audit_logs`
+- `password_reset_tokens`
 
-## Version
-- Date: 25/01/2026
-- Statut: PRÊT POUR VALIDATION
+## Backlog / Pending
+
+### P1
+- **Logo officiel** : à fournir par utilisateur → upload via admin Paramètres
+- **Stripe LIVE** : utilisateur fournira les clés quand prêt
+
+### P2
+- **Envoi email réel** des devis/pro registrations (actuellement seulement sauvegardés en BDD). Intégration Resend ou SMTP Gmail recommandée.
+- **WhatsApp Business API** : actuellement seulement liens `wa.me` (gratuit). Pour notifications automatiques, intégration Twilio nécessaire.
+
+### P3 / Future
+- Système de panier complet (pas seulement paiement libre montant)
+- Comptes clients particuliers (suivi commandes)
+- Notifications push admin pour nouveaux devis/inscriptions
+- Export comptable / facturation PDF
+
+## Architecture Notes
+- `server.py` dépasse 1300 lignes — à refactorer en `/app/backend/routes/*.py` (uploads, csv, promotions, quicklinks, settings, pro_registrations, audit, analytics)
+- Frontend : composants admin dans `/app/frontend/src/components/admin/`, composants public dans `/app/frontend/src/components/public/`
+- HTTPBearer renvoie 403 (et non 401) pour token manquant — comportement FastAPI par défaut, fonctionnellement OK
